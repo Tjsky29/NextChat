@@ -5,7 +5,10 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 0 * * *" # every day
+    # 核心配置：设置定时任务
+    # cron 表达式 '0 0 * * *' 代表每天在 UTC 时间的零点 (也就是北京时间上午8点) 运行一次。
+    - cron: "0 0 * * *"
+  # 保留手动触发功能，让您随时可以点击按钮立即更新。
   workflow_dispatch:
 
 jobs:
@@ -15,23 +18,24 @@ jobs:
     if: ${{ github.event.repository.fork }}
 
     steps:
-      # Step 1: run a standard checkout action
+      # 步骤 1: 检出您的仓库代码
       - name: Checkout target repo
         uses: actions/checkout@v3
 
-      # Step 2: run the sync action
+      # 步骤 2: 运行同步 Action，它会自动从上游仓库拉取最新代码
       - name: Sync upstream changes
         id: sync
         uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
         with:
+          # 注意：即使原项目改名为 NextChat，这里的上游仓库地址也无需修改，它会自动处理。
           upstream_sync_repo: ChatGPTNextWeb/ChatGPT-Next-Web
           upstream_sync_branch: main
           target_sync_branch: main
-          target_repo_token: ${{ secrets.GITHUB_TOKEN }} # automatically generated, no need to set
-
-          # Set test_mode true to run tests instead of the true action!!
+          # 使用 GitHub 自动生成的 Token，安全且无需您手动配置。
+          target_repo_token: ${{ secrets.GITHUB_TOKEN }}
           test_mode: false
 
+      # 步骤 3: 检查同步是否失败，并给出提示
       - name: Sync check
         if: failure()
         run: |
